@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create Fullcalender CRUD Events in Laravel</title>
+    <title>Create Fullcalendar CRUD Events in Laravel</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" />
@@ -15,7 +15,7 @@
 <body>
 
     <div class="container mt-5" style="max-width: 700px">
-        <h2 class="h2 text-center mb-5 border-bottom pb-3">Laravel FullCalender CRUD Events Example</h2>
+        <h2 class="h2 text-center mb-5 border-bottom pb-3">Laravel FullCalendar</h2>
         <div id='full_calendar_events'></div>
     </div>
 
@@ -27,7 +27,6 @@
 
     <script>
         $(document).ready(function () {
-
             var SITEURL = "{{ url('/') }}";
 
             $.ajaxSetup({
@@ -38,8 +37,20 @@
 
             var calendar = $('#full_calendar_events').fullCalendar({
                 editable: true,
-                editable: true,
-                events: SITEURL + "/calendar-event",
+                events: function(start, end, timezone, callback) {
+                    $.ajax({
+                        url: SITEURL + "/calendar-event",
+                        type: 'GET',
+                        data: {
+                            start: start.format(),
+                            end: end.format()
+                        },
+                        success: function(data) {
+                            console.log("Events data:", data);  // Log the events data to the console
+                            callback(data);
+                        }
+                    });
+                },
                 displayEventTime: true,
                 eventRender: function (event, element, view) {
                     if (event.allDay === 'true') {
@@ -86,9 +97,9 @@
                     $.ajax({
                         url: SITEURL + '/calendar-crud-ajax',
                         data: {
-                            title: event.event_name,
-                            start: event_start,
-                            end: event_end,
+                            event_name: event.title,
+                            event_start: event_start,
+                            event_end: event_end,
                             id: event.id,
                             type: 'edit'
                         },
@@ -99,7 +110,7 @@
                     });
                 },
                 eventClick: function (event) {
-                    var eventDelete = confirm("Are you sure?");
+                    var eventDelete = confirm("You Want to Delete this Event? Are you sure?");
                     if (eventDelete) {
                         $.ajax({
                             type: "POST",
@@ -121,7 +132,6 @@
         function displayMessage(message) {
             toastr.success(message, 'Event');            
         }
-
     </script>
 
 </body>
